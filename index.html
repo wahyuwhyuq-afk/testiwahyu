@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galeri Testimoni - Wahyu Store Subang</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+  body {
+    min-height: 100vh; padding: 30px 20px;
+    background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 40%, #E0F6FF 75%, #F5FBFF 100%);
+    background-attachment: fixed; position: relative; overflow-x: hidden;
+  }
+  .cloud {
+    position: fixed; background: #fff; border-radius: 50%;
+    opacity: 0.7; filter: blur(2px); animation: float 8s ease-in-out infinite;
+    pointer-events: none; z-index: 0;
+  }
+  .cloud::before, .cloud::after { content: ''; position: absolute; background: #fff; border-radius: 50%; }
+  .cloud1 { width: 100px; height: 40px; top: 8%; left: 3%; }
+  .cloud1::before { width: 50px; height: 50px; top: -25px; left: 15px; }
+  .cloud1::after { width: 40px; height: 40px; top: -18px; left: 50px; }
+  .cloud2 { width: 130px; height: 50px; top: 15%; right: 5%; animation-delay: 1.5s; }
+  .cloud2::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+  .cloud2::after { width: 50px; height: 50px; top: -22px; left: 65px; }
+  .cloud3 { width: 80px; height: 35px; bottom: 15%; left: 8%; animation-delay: 3s; }
+  .cloud3::before { width: 45px; height: 45px; top: -22px; left: 12px; }
+  .cloud3::after { width: 35px; height: 35px; top: -15px; left: 42px; }
+  .cloud4 { width: 110px; height: 45px; bottom: 20%; right: 10%; animation-delay: 2s; }
+  .cloud4::before { width: 55px; height: 55px; top: -28px; left: 18px; }
+  .cloud4::after { width: 45px; height: 45px; top: -20px; left: 55px; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+  .container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 10; }
+  .header { text-align: center; margin-bottom: 30px; }
+  .header h1 { color: #1E5A8A; font-size: 32px; margin-bottom: 8px; text-shadow: 0 2px 10px rgba(255,255,255,0.8); }
+  .header p { color: #2C6FA3; font-size: 15px; }
+  .admin-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 24px; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, #4FA8D8, #87CEEB); color: #fff;
+    box-shadow: 0 6px 15px rgba(79, 168, 216, 0.4);
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(79, 168, 216, 0.5); }
+  .btn-logout { background: #fff; color: #1E5A8A; border: 2px solid #87CEEB; }
+  .btn-logout:hover { background: #E5F4FC; }
+  .admin-status {
+    text-align: center; margin-bottom: 20px; padding: 10px 20px;
+    background: rgba(255,255,255,0.9); border-radius: 10px;
+    display: inline-block; color: #1E5A8A; font-size: 14px;
+    font-weight: 600; border: 1px solid #87CEEB;
+  }
+  .admin-status-wrapper { text-align: center; }
+  .card {
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+    border-radius: 20px; padding: 30px;
+    box-shadow: 0 15px 40px rgba(70,130,180,0.25);
+    border: 1px solid rgba(255,255,255,0.8); margin-bottom: 30px; display: none;
+  }
+  .card.show { display: block; animation: slideDown 0.4s ease; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+  .card h2 { color: #1E5A8A; font-size: 20px; margin-bottom: 20px; text-align: center; }
+  .form-group { margin-bottom: 18px; }
+  label { display: block; color: #1E5A8A; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  input[type="text"], input[type="password"], textarea {
+    width: 100%; padding: 12px 15px; border: 2px solid #D6EBF7;
+    border-radius: 10px; background: #F5FBFF; font-size: 14px;
+    color: #2C3E50; transition: all 0.3s ease; outline: none; font-family: inherit;
+  }
+  input:focus, textarea:focus {
+    border-color: #87CEEB; background: #fff; box-shadow: 0 0 0 4px rgba(135,206,235,0.2);
+  }
+  textarea { resize: vertical; min-height: 90px; }
+  .upload-area {
+    border: 2px dashed #87CEEB; border-radius: 10px; padding: 20px;
+    text-align: center; background: #F5FBFF; cursor: pointer;
+    transition: all 0.3s ease; display: block;
+  }
+  .upload-area:hover { background: #E5F4FC; border-color: #4FA8D8; }
+  .upload-area input[type="file"] { display: none; }
+  .upload-area .icon { font-size: 30px; color: #4FA8D8; }
+  .upload-area .text { color: #5B8FB9; font-size: 13px; margin-top: 5px; }
+  #preview { margin-top: 12px; max-width: 200px; border-radius: 10px; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .gallery-section {
+    background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);
+    border-radius: 20px; padding: 25px;
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 10px 30px rgba(70,130,180,0.15);
+  }
+  .gallery-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .gallery-header h2 { color: #1E5A8A; font-size: 22px; }
+  .gallery-header .count { color: #5B8FB9; font-size: 14px; }
+  .gallery-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;
+  }
+  .gallery-item {
+    background: #fff; border-radius: 15px; overflow: hidden;
+    box-shadow: 0 6px 20px rgba(70,130,180,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+  }
+  .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(70,130,180,0.3); }
+  .gallery-item .image-wrapper {
+    position: relative; width: 100%; padding-top: 75%;
+    background: #E5F4FC; overflow: hidden;
+  }
+  .gallery-item .image-wrapper img {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .gallery-item .order-badge {
+    position: absolute; top: 10px; left: 10px;
+    background: linear-gradient(135deg, #4FA8D8, #87CEEB);
+    color: #fff; font-weight: 700; font-size: 13px;
+    padding: 5px 12px; border-radius: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2); z-index: 2;
+  }
+  .gallery-item .caption-box { padding: 15px; }
+  .gallery-item .caption-box h3 { color: #1E5A8A; font-size: 15px; margin-bottom: 5px; }
+  .gallery-item .caption-box p { color: #5B8FB9; font-size: 13px; line-height: 1.5; word-wrap: break-word; }
+  .gallery-item .caption-box .date { color: #9BB8CC; font-size: 11px; margin-top: 8px; display: block; }
+  .delete-btn {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,100,100,0.9); color: #fff; border: none;
+    border-radius: 50%; width: 32px; height: 32px; font-size: 16px;
+    cursor: pointer; display: none; align-items: center;
+    justify-content: center; z-index: 3; transition: all 0.2s;
+  }
+  .delete-btn:hover { background: #E74C3C; transform: scale(1.1); }
+  .is-admin .delete-btn { display: flex; }
+  .empty-state { text-align: center; padding: 50px 20px; color: #5B8FB9; }
+  .empty-state .icon { font-size: 50px; margin-bottom: 15px; }
+  .empty-state p { font-size: 15px; }
+  .loading { text-align: center; padding: 40px 20px; color: #5B8FB9; }
+  .spinner {
+    display: inline-block; width: 40px; height: 40px;
+    border: 4px solid #D6EBF7; border-top-color: #4FA8D8;
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(30,90,138,0.5); backdrop-filter: blur(5px);
+    display: none; justify-content: center; align-items: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 20px; padding: 35px 30px;
+    max-width: 400px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: popIn 0.3s ease;
+  }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+  .modal h2 { color: #1E5A8A; margin-bottom: 10px; text-align: center; font-size: 22px; }
+  .modal p { color: #5B8FB9; font-size: 13px; text-align: center; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 15px; }
+  .modal-actions .btn { flex: 1; justify-content: center; }
+  .btn-cancel { background: #F0F4F8; color: #5B8FB9; }
+  .btn-cancel:hover { background: #E1EAF2; }
+  .error-msg { display: none; color: #E74C3C; font-size: 13px; margin-top: 10px; text-align: center; font-weight: 600; }
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1E5A8A; color: #fff; padding: 14px 24px;
+    border-radius: 12px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25); opacity: 0;
+    transition: all 0.4s ease; z-index: 2000;
+    display: flex; align-items: center; gap: 8px; max-width: 90%;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: #2C9E6E; }
+  .toast.error { background: #E74C3C; }
+  .lightbox {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); display: none; justify-content: center;
+    align-items: center; z-index: 1500; padding: 20px;
+  }
+  .lightbox.show { display: flex; }
+  .lightbox-content { max-width: 90%; max-height: 85vh; position: relative; }
+  .lightbox-content img { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .lightbox-caption {
+    background: rgba(255,255,255,0.95); padding: 12px 20px;
+    border-radius: 10px; margin-top: 15px; text-align: center;
+    color: #1E5A8A; font-size: 14px;
+  }
+  .lightbox-close {
+    position: absolute; top: -40px; right: 0;
+    background: rgba(255,255,255,0.9); border: none;
+    border-radius: 50%; width: 35px; height: 35px;
+    font-size: 20px; cursor: pointer; color: #1E5A8A;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lightbox-close:hover { background: #fff; }
+  @media (max-width: 600px) {
+    .header h1 { font-size: 24px; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="cloud cloud3"></div>
+  <div class="cloud cloud4"></div>
+
+  <div class="container">
+    <div class="header">
+      <h1>☁️ Galeri Testimoni ☁️</h1>
+      <p>Wahyu Store Subang — Kumpulan momen & cerita dari pelanggan kami</p>
+    </div>
+
+    <div class="admin-bar">
+      <button class="btn btn-primary" id="btnAdminLogin">🔐 Login Admin</button>
+      <button class="btn btn-primary" id="btnUpload" style="display:none;">📤 Upload Testimoni</button>
+      <button class="btn btn-logout" id="btnLogout" style="display:none;">🚪 Logout</button>
+    </div>
+
+    <div class="admin-status-wrapper">
+      <div class="admin-status" id="adminStatus" style="display:none;">
+        ✅ Login sebagai <strong>Admin</strong>
+      </div>
+    </div>
+
+    <div class="card" id="uploadCard">
+      <h2>📝 Form Upload Testimoni</h2>
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="nama">Nama Pelanggan</label>
+          <input type="text" id="nama" placeholder="Nama lengkap" required>
+        </div>
+
+        <div class="form-group">
+          <label for="caption">Caption / Testimoni</label>
+          <textarea id="caption" placeholder="Tulis cerita atau testimoni..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Foto (otomatis dikompres)</label>
+          <label for="foto" class="upload-area">
+            <div class="icon">📷</div>
+            <div class="text">Klik untuk pilih foto (JPG/PNG)</div>
+            <input type="file" id="foto" accept="image/*" required>
+          </label>
+          <img id="preview" alt="Preview">
+          <div id="sizeInfo" style="margin-top:8px; font-size:12px; color:#5B8FB9; display:none;"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btnSubmitForm" style="width:100%; justify-content:center;">
+          🚀 Simpan Testimoni
+        </button>
+      </form>
+    </div>
+
+    <div class="gallery-section">
+      <div class="gallery-header">
+        <h2>📸 Galeri Testimoni</h2>
+        <span class="count" id="itemCount">Memuat...</span>
+      </div>
+      <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p>Memuat data dari server...</p>
+      </div>
+      <div class="gallery-grid" id="galleryGrid" style="display:none;"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="icon">☁️</div>
+        <p>Belum ada testimoni. Silakan login sebagai admin untuk menambahkan.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <h2>🔐 Login Admin</h2>
+      <p>Masukkan password untuk mengakses panel admin</p>
+      <div class="form-group">
+        <input type="password" id="adminPassword" placeholder="Password admin" autocomplete="off">
+      </div>
+      <div class="error-msg" id="loginError">❌ Password salah!</div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" id="btnCancelLogin">Batal</button>
+        <button class="btn btn-primary" id="btnSubmitLogin">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightboxClose">✕</button>
+      <img id="lightboxImg" alt="">
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, deleteDoc, doc,
+  onSnapshot, query, orderBy, serverTimestamp, getDocs, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAbucBF9fmOx4I4mHeN7QY-5kHGi8D4DmM",
+  authDomain: "wahyu-store-subang-4e51e.firebaseapp.com",
+  projectId: "wahyu-store-subang-4e51e",
+  storageBucket: "wahyu-store-subang-4e51e.firebasestorage.app",
+  messagingSenderId: "288139477735",
+  appId: "1:288139477735:web:203a0c5a7ad2382f3ad842",
+  measurementId: "G-SNGVX5PMH8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const ADMIN_PASSWORD = "admin123";
+const ADMIN_KEY = "galeri_testimoni_admin_session";
+const MAX_IMAGE_SIZE_KB = 700; // Target ukuran kompres (KB)
+
+let isAdmin = sessionStorage.getItem(ADMIN_KEY) === "true";
+let testimonials = [];
+
+/* ============================================
+   UTILITY
+============================================ */
+function showToast(msg, type = "success") {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.className = "toast " + type;
+  setTimeout(() => toast.classList.add("show"), 10);
+  setTimeout(() => toast.classList.remove("show"), 3500);
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return "Baru saja";
+  let d;
+  if (timestamp.toDate) d = timestamp.toDate();
+  else d = new Date(timestamp);
+  const opts = { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" };
+  return d.toLocaleDateString("id-ID", opts);
+}
+
+function escapeHTML(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML;
+}
+
+/* ============================================
+   KOMPRES FOTO → BASE64
+============================================ */
+function compressImage(file, maxSizeKB = MAX_IMAGE_SIZE_KB) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Hitung dimensi baru (max 900px)
+        const MAX_DIM = 900;
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Coba kualitas 0.85 → turunkan jika masih > target
+        let quality = 0.85;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        
+        // Loop turunkan kualitas sampai ukuran < target
+        while (dataUrl.length > maxSizeKB * 1024 * 1.37 && quality > 0.3) {
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ============================================
+   RENDER GALERI
+============================================ */
+function renderGallery() {
+  const grid = document.getElementById("galleryGrid");
+  const empty = document.getElementById("emptyState");
+  const loading = document.getElementById("loadingState");
+  const count = document.getElementById("itemCount");
+
+  loading.style.display = "none";
+  count.textContent = testimonials.length + " testimoni";
+
+  if (testimonials.length === 0) {
+    grid.style.display = "none";
+    empty.style.display = "block";
+    return;
+  }
+
+  empty.style.display = "none";
+  grid.style.display = "grid";
+
+  const sorted = [...testimonials].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  grid.innerHTML = sorted.map(item => `
+    <div class="gallery-item ${isAdmin ? 'is-admin' : ''}" data-id="${item.id}">
+      <div class="image-wrapper">
+        <span class="order-badge">#${item.order}</span>
+        <button class="delete-btn" data-delete="${item.id}" data-order="${item.order}" title="Hapus">✕</button>
+        <img src="${item.foto}" alt="${escapeHTML(item.nama)}" 
+             onclick="openLightbox('${item.id}')" style="cursor:pointer;" loading="lazy">
+      </div>
+      <div class="caption-box">
+        <h3>${escapeHTML(item.nama)}</h3>
+        <p>${escapeHTML(item.caption)}</p>
+        <span class="date">📅 ${formatDate(item.createdAt)}</span>
+      </div>
+    </div>
+  `).join("");
+
+  document.querySelectorAll("[data-delete]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.delete;
+      const order = btn.dataset.order;
+      if (confirm(`Yakin ingin menghapus testimoni #${order}?`)) {
+        deleteTestimonial(id);
+      }
+    });
+  });
+}
+
+/* ============================================
+   REALTIME LISTENER
+============================================ */
+function startRealtimeListener() {
+  const loading = document.getElementById("loadingState");
+  loading.style.display = "block";
+
+  const q = query(collection(db, "testimonials"), orderBy("order", "asc"));
+
+  onSnapshot(q, (snapshot) => {
+    testimonials = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderGallery();
+  }, (error) => {
+    console.error("Error loading data:", error);
+    loading.style.display = "none";
+    document.getElementById("emptyState").style.display = "block";
+    showToast("❌ Gagal memuat: " + error.message, "error");
+  });
+}
+
+/* ============================================
+   ADD TESTIMONI (langsung simpan Base64 ke Firestore)
+============================================ */
+async function addTestimonial(nama, caption, base64Image) {
+  const btnSubmit = document.getElementById("btnSubmitForm");
+  btnSubmit.disabled = true;
+  btnSubmit.textContent = "⏳ Menyimpan...";
+
+  try {
+    const maxOrder = testimonials.length > 0
+      ? Math.max(...testimonials.map(t => t.order || 0))
+      : 0;
+    const newOrder = maxOrder + 1;
+
+    await addDoc(collection(db, "testimonials"), {
+      order: newOrder,
+      nama: nama,
+      caption: caption,
+      foto: base64Image,
+      createdAt: serverTimestamp()
+    });
+
+    showToast(`✅ Testimoni #${newOrder} berhasil disimpan!`, "success");
+    return true;
+  } catch (err) {
+    console.error("Save error:", err);
+    showToast("❌ Gagal: " + err.message, "error");
+    return false;
+  } finally {
+    btnSubmit.disabled = false;
+    btnSubmit.textContent = "🚀 Simpan Testimoni";
+  }
+}
+
+/* ============================================
+   DELETE TESTIMONI
+============================================ */
+async function deleteTestimonial(id) {
+  const item = testimonials.find(t => t.id === id);
+  if (!item) return;
+
+  try {
+    await deleteDoc(doc(db, "testimonials", id));
+    showToast(`🗑️ Testimoni #${item.order} dihapus`, "success");
+    // Reorder otomatis setelah listener update
+    setTimeout(reorderTestimonials, 500);
+  } catch (err) {
+    console.error("Delete error:", err);
+    showToast("❌ Gagal hapus: " + err.message, "error");
+  }
+}
+
+async function reorderTestimonials() {
+  const q = query(collection(db, "testimonials"), orderBy("order", "asc"));
+  const snapshot = await getDocs(q);
+  let counter = 1;
+  const promises = [];
+  snapshot.forEach(d => {
+    if (d.data().order !== counter) {
+      promises.push(updateDoc(doc(db, "testimonials", d.id), { order: counter }));
+    }
+    counter++;
+  });
+  await Promise.all(promises);
+}
+
+/* ============================================
+   UI ADMIN
+============================================ */
+function updateAdminUI() {
+  const btnLogin = document.getElementById("btnAdminLogin");
+  const btnUpload = document.getElementById("btnUpload");
+  const btnLogout = document.getElementById("btnLogout");
+  const adminStatus = document.getElementById("adminStatus");
+  const uploadCard = document.getElementById("uploadCard");
+
+  if (isAdmin) {
+    btnLogin.style.display = "none";
+    btnUpload.style.display = "inline-flex";
+    btnLogout.style.display = "inline-flex";
+    adminStatus.style.display = "inline-block";
+    uploadCard.classList.add("show");
+  } else {
+    btnLogin.style.display = "inline-flex";
+    btnUpload.style.display = "none";
+    btnLogout.style.display = "none";
+    adminStatus.style.display = "none";
+    uploadCard.classList.remove("show");
+  }
+  renderGallery();
+}
+
+/* ============================================
+   LOGIN
+============================================ */
+const loginModal = document.getElementById("loginModal");
+const adminPassword = document.getElementById("adminPassword");
+const loginError = document.getElementById("loginError");
+
+function openLoginModal() {
+  loginModal.classList.add("show");
+  adminPassword.value = "";
+  loginError.style.display = "none";
+  setTimeout(() => adminPassword.focus(), 100);
+}
+function closeLoginModal() { loginModal.classList.remove("show"); }
+
+function doLogin() {
+  if (adminPassword.value === ADMIN_PASSWORD) {
+    isAdmin = true;
+    sessionStorage.setItem(ADMIN_KEY, "true");
+    closeLoginModal();
+    updateAdminUI();
+    showToast("✅ Login berhasil!", "success");
+  } else {
+    loginError.style.display = "block";
+    adminPassword.value = "";
+    adminPassword.focus();
+  }
+}
+
+/* ============================================
+   PREVIEW + KOMPRES FOTO
+============================================ */
+const fotoInput = document.getElementById("foto");
+const preview = document.getElementById("preview");
+const sizeInfo = document.getElementById("sizeInfo");
+let compressedBase64 = null;
+
+fotoInput.addEventListener("change", async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    showToast("⚠️ File harus berupa gambar", "error");
+    this.value = "";
+    return;
+  }
+
+  sizeInfo.style.display = "block";
+  sizeInfo.textContent = `⏳ Mengompres... (${(file.size/1024).toFixed(0)} KB)`;
+
+  try {
+    compressedBase64 = await compressImage(file);
+    preview.src = compressedBase64;
+    preview.style.display = "block";
+    const finalKB = (compressedBase64.length * 0.75 / 1024).toFixed(0);
+    sizeInfo.textContent = `✅ Terkompres: ${(file.size/1024).toFixed(0)} KB → ${finalKB} KB`;
+  } catch (err) {
+    console.error(err);
+    showToast("❌ Gagal memproses gambar", "error");
+    compressedBase64 = null;
+    preview.style.display = "none";
+    sizeInfo.style.display = "none";
+  }
+});
+
+/* ============================================
+   SUBMIT
+============================================ */
+document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  if (!isAdmin) {
+    showToast("❌ Hanya admin yang bisa upload", "error");
+    return;
+  }
+
+  const nama = document.getElementById("nama").value.trim();
+  const caption = document.getElementById("caption").value.trim();
+
+  if (!nama || !caption) {
+    showToast("⚠️ Mohon lengkapi nama & caption", "error");
+    return;
+  }
+  if (!compressedBase64) {
+    showToast("⚠️ Pilih foto terlebih dahulu", "error");
+    return;
+  }
+
+  const ok = await addTestimonial(nama, caption, compressedBase64);
+  if (ok) {
+    this.reset();
+    preview.style.display = "none";
+    preview.src = "";
+    sizeInfo.style.display = "none";
+    compressedBase64 = null;
+  }
+});
+
+/* ============================================
+   LIGHTBOX
+============================================ */
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const lightboxCaption = document.getElementById("lightboxCaption");
+
+window.openLightbox = function(id) {
+  const item = testimonials.find(t => t.id === id);
+  if (!item) return;
+  lightboxImg.src = item.foto;
+  lightboxCaption.innerHTML = `<strong>#${item.order} - ${escapeHTML(item.nama)}</strong><br>${escapeHTML(item.caption)}`;
+  lightbox.classList.add("show");
+};
+
+document.getElementById("lightboxClose").addEventListener("click", () => lightbox.classList.remove("show"));
+lightbox.addEventListener("click", (e) => { if (e.target === lightbox) lightbox.classList.remove("show"); });
+
+/* ============================================
+   EVENT LISTENERS
+============================================ */
+document.getElementById("btnAdminLogin").addEventListener("click", openLoginModal);
+document.getElementById("btnCancelLogin").addEventListener("click", closeLoginModal);
+document.getElementById("btnSubmitLogin").addEventListener("click", doLogin);
+adminPassword.addEventListener("keypress", (e) => { if (e.key === "Enter") doLogin(); });
+loginModal.addEventListener("click", (e) => { if (e.target === loginModal) closeLoginModal(); });
+document.getElementById("btnUpload").addEventListener("click", () => {
+  document.getElementById("uploadCard").scrollIntoView({ behavior: "smooth" });
+});
+document.getElementById("btnLogout").addEventListener("click", () => {
+  if (!confirm("Yakin ingin logout?")) return;
+  isAdmin = false;
+  sessionStorage.removeItem(ADMIN_KEY);
+  updateAdminUI();
+  showToast("🚪 Logout berhasil", "success");
+});
+
+/* ============================================
+   INIT
+============================================ */
+updateAdminUI();
+startRealtimeListener();
+</script>
+</body>
+</html>
