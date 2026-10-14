@@ -106,6 +106,8 @@
     box-shadow: 0 6px 20px rgba(70,130,180,0.15);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
+    display: flex;
+    flex-direction: column;
   }
   .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(70,130,180,0.3); }
   .gallery-item .image-wrapper {
@@ -127,6 +129,58 @@
   .gallery-item .caption-box h3 { color: #1E5A8A; font-size: 15px; margin-bottom: 5px; }
   .gallery-item .caption-box p { color: #5B8FB9; font-size: 13px; line-height: 1.5; word-wrap: break-word; }
   .gallery-item .caption-box .date { color: #9BB8CC; font-size: 11px; margin-top: 8px; display: block; }
+
+  /* Reaction Bar */
+  .reaction-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 15px 15px;
+    border-top: 1px dashed #D6EBF7;
+    margin-top: auto;
+  }
+  .reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 2px solid #D6EBF7;
+    background: #F5FBFF;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    font-family: inherit;
+  }
+  .reaction-btn:hover {
+    transform: scale(1.08);
+    background: #E5F4FC;
+    border-color: #87CEEB;
+  }
+  .reaction-btn.active {
+    background: linear-gradient(135deg, #4FA8D8, #87CEEB);
+    border-color: #4FA8D8;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79,168,216,0.4);
+  }
+  .reaction-btn .count {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1E5A8A;
+    min-width: 12px;
+    text-align: center;
+  }
+  .reaction-btn.active .count { color: #fff; }
+  .reaction-btn.pop {
+    animation: popBtn 0.3s ease;
+  }
+  @keyframes popBtn {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+
   .delete-btn {
     position: absolute; top: 10px; right: 10px;
     background: rgba(255,100,100,0.9); color: #fff; border: none;
@@ -185,11 +239,18 @@
   }
   .lightbox.show { display: flex; }
   .lightbox-content { max-width: 90%; max-height: 85vh; position: relative; }
-  .lightbox-content img { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .lightbox-content img { max-width: 100%; max-height: 70vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
   .lightbox-caption {
     background: rgba(255,255,255,0.95); padding: 12px 20px;
     border-radius: 10px; margin-top: 15px; text-align: center;
     color: #1E5A8A; font-size: 14px;
+  }
+  .lightbox-reactions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
   }
   .lightbox-close {
     position: absolute; top: -40px; right: 0;
@@ -203,6 +264,7 @@
     .header h1 { font-size: 24px; }
     .gallery-grid { grid-template-columns: 1fr; }
     .card { padding: 20px; }
+    .reaction-btn { padding: 5px 8px; font-size: 13px; }
   }
 </style>
 </head>
@@ -298,6 +360,7 @@
       <button class="lightbox-close" id="lightboxClose">✕</button>
       <img id="lightboxImg" alt="">
       <div class="lightbox-caption" id="lightboxCaption"></div>
+      <div class="lightbox-reactions" id="lightboxReactions"></div>
     </div>
   </div>
 
@@ -307,7 +370,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, addDoc, deleteDoc, doc,
-  onSnapshot, query, orderBy, serverTimestamp, getDocs, updateDoc
+  onSnapshot, query, orderBy, serverTimestamp, getDocs, updateDoc,
+  arrayUnion, arrayRemove, increment
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -325,7 +389,10 @@ const db = getFirestore(app);
 
 const ADMIN_PASSWORD = "admin123";
 const ADMIN_KEY = "galeri_testimoni_admin_session";
-const MAX_IMAGE_SIZE_KB = 700; // Target ukuran kompres (KB)
+const MAX_IMAGE_SIZE_KB = 700;
+
+/* Daftar emoji reaction yang tersedia */
+const REACTION_EMOJIS = ["👍", "❤️", "🔥", "😍", "😂"];
 
 let isAdmin = sessionStorage.getItem(ADMIN_KEY) === "true";
 let testimonials = [];
@@ -356,6 +423,17 @@ function escapeHTML(str) {
   return div.innerHTML;
 }
 
+/* ID unik per browser (untuk cek apakah user sudah reaksi) */
+function getUserId() {
+  let uid = localStorage.getItem("testimoni_user_id");
+  if (!uid) {
+    uid = "user_" + Date.now() + "_" + Math.random().toString(36).substr(2, 8);
+    localStorage.setItem("testimoni_user_id", uid);
+  }
+  return uid;
+}
+const USER_ID = getUserId();
+
 /* ============================================
    KOMPRES FOTO → BASE64
 ============================================ */
@@ -365,7 +443,6 @@ function compressImage(file, maxSizeKB = MAX_IMAGE_SIZE_KB) {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
-        // Hitung dimensi baru (max 900px)
         const MAX_DIM = 900;
         let { width, height } = img;
         if (width > MAX_DIM || height > MAX_DIM) {
@@ -386,16 +463,12 @@ function compressImage(file, maxSizeKB = MAX_IMAGE_SIZE_KB) {
         ctx.fillRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Coba kualitas 0.85 → turunkan jika masih > target
         let quality = 0.85;
         let dataUrl = canvas.toDataURL("image/jpeg", quality);
-        
-        // Loop turunkan kualitas sampai ukuran < target
         while (dataUrl.length > maxSizeKB * 1024 * 1.37 && quality > 0.3) {
           quality -= 0.1;
           dataUrl = canvas.toDataURL("image/jpeg", quality);
         }
-        
         resolve(dataUrl);
       };
       img.onerror = reject;
@@ -404,6 +477,50 @@ function compressImage(file, maxSizeKB = MAX_IMAGE_SIZE_KB) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+/* ============================================
+   REACTION HELPERS
+============================================ */
+/* Format data reactions: { "👍": ["user1","user2"], "❤️": ["user3"] } */
+function getReactionCount(item, emoji) {
+  if (!item.reactions) return 0;
+  const users = item.reactions[emoji] || [];
+  return users.length;
+}
+
+function hasUserReacted(item, emoji) {
+  if (!item.reactions) return false;
+  const users = item.reactions[emoji] || [];
+  return users.includes(USER_ID);
+}
+
+function totalReactions(item) {
+  if (!item.reactions) return 0;
+  return Object.values(item.reactions).reduce((sum, arr) => sum + (arr?.length || 0), 0);
+}
+
+/* ============================================
+   TOGGLE REACTION (klik emoji)
+============================================ */
+async function toggleReaction(itemId, emoji) {
+  const item = testimonials.find(t => t.id === itemId);
+  if (!item) return;
+
+  const alreadyReacted = hasUserReacted(item, emoji);
+  const docRef = doc(db, "testimonials", itemId);
+
+  try {
+    /* Gunakan dotted path update untuk field reactions.EMOJI */
+    const reactionPath = `reactions.${emoji}`;
+    await updateDoc(docRef, {
+      [reactionPath]: alreadyReacted ? arrayRemove(USER_ID) : arrayUnion(USER_ID)
+    });
+    /* Realtime listener akan auto-refresh data & UI */
+  } catch (err) {
+    console.error("Reaction error:", err);
+    showToast("❌ Gagal menyimpan reaksi: " + err.message, "error");
+  }
 }
 
 /* ============================================
@@ -429,22 +546,57 @@ function renderGallery() {
 
   const sorted = [...testimonials].sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  grid.innerHTML = sorted.map(item => `
-    <div class="gallery-item ${isAdmin ? 'is-admin' : ''}" data-id="${item.id}">
-      <div class="image-wrapper">
-        <span class="order-badge">#${item.order}</span>
-        <button class="delete-btn" data-delete="${item.id}" data-order="${item.order}" title="Hapus">✕</button>
-        <img src="${item.foto}" alt="${escapeHTML(item.nama)}" 
-             onclick="openLightbox('${item.id}')" style="cursor:pointer;" loading="lazy">
-      </div>
-      <div class="caption-box">
-        <h3>${escapeHTML(item.nama)}</h3>
-        <p>${escapeHTML(item.caption)}</p>
-        <span class="date">📅 ${formatDate(item.createdAt)}</span>
-      </div>
-    </div>
-  `).join("");
+  grid.innerHTML = sorted.map(item => {
+    const reactionHTML = REACTION_EMOJIS.map(emoji => {
+      const cnt = getReactionCount(item, emoji);
+      const active = hasUserReacted(item, emoji) ? "active" : "";
+      return `
+        <button class="reaction-btn ${active}" 
+                data-reaction-item="${item.id}" 
+                data-reaction-emoji="${emoji}"
+                title="Beri reaksi ${emoji}">
+          <span>${emoji}</span>
+          <span class="count">${cnt}</span>
+        </button>
+      `;
+    }).join("");
 
+    return `
+      <div class="gallery-item ${isAdmin ? 'is-admin' : ''}" data-id="${item.id}">
+        <div class="image-wrapper">
+          <span class="order-badge">#${item.order}</span>
+          <button class="delete-btn" data-delete="${item.id}" data-order="${item.order}" title="Hapus">✕</button>
+          <img src="${item.foto}" alt="${escapeHTML(item.nama)}" 
+               onclick="openLightbox('${item.id}')" style="cursor:pointer;" loading="lazy">
+        </div>
+        <div class="caption-box">
+          <h3>${escapeHTML(item.nama)}</h3>
+          <p>${escapeHTML(item.caption)}</p>
+          <span class="date">📅 ${formatDate(item.createdAt)}</span>
+        </div>
+        <div class="reaction-bar">
+          ${reactionHTML}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  /* Event listener reaction */
+  document.querySelectorAll("[data-reaction-item]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const itemId = btn.dataset.reactionItem;
+      const emoji = btn.dataset.reactionEmoji;
+
+      /* Animasi pop */
+      btn.classList.add("pop");
+      setTimeout(() => btn.classList.remove("pop"), 300);
+
+      toggleReaction(itemId, emoji);
+    });
+  });
+
+  /* Event listener hapus */
   document.querySelectorAll("[data-delete]").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -478,7 +630,7 @@ function startRealtimeListener() {
 }
 
 /* ============================================
-   ADD TESTIMONI (langsung simpan Base64 ke Firestore)
+   ADD TESTIMONI
 ============================================ */
 async function addTestimonial(nama, caption, base64Image) {
   const btnSubmit = document.getElementById("btnSubmitForm");
@@ -496,6 +648,7 @@ async function addTestimonial(nama, caption, base64Image) {
       nama: nama,
       caption: caption,
       foto: base64Image,
+      reactions: {},  // Inisialisasi reactions kosong
       createdAt: serverTimestamp()
     });
 
@@ -521,7 +674,6 @@ async function deleteTestimonial(id) {
   try {
     await deleteDoc(doc(db, "testimonials", id));
     showToast(`🗑️ Testimoni #${item.order} dihapus`, "success");
-    // Reorder otomatis setelah listener update
     setTimeout(reorderTestimonials, 500);
   } catch (err) {
     console.error("Delete error:", err);
@@ -673,13 +825,80 @@ document.getElementById("uploadForm").addEventListener("submit", async function(
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
 const lightboxCaption = document.getElementById("lightboxCaption");
+const lightboxReactions = document.getElementById("lightboxReactions");
 
 window.openLightbox = function(id) {
   const item = testimonials.find(t => t.id === id);
   if (!item) return;
   lightboxImg.src = item.foto;
   lightboxCaption.innerHTML = `<strong>#${item.order} - ${escapeHTML(item.nama)}</strong><br>${escapeHTML(item.caption)}`;
+
+  /* Render reactions di lightbox */
+  lightboxReactions.innerHTML = REACTION_EMOJIS.map(emoji => {
+    const cnt = getReactionCount(item, emoji);
+    const active = hasUserReacted(item, emoji) ? "active" : "";
+    return `
+      <button class="reaction-btn ${active}" 
+              data-lightbox-reaction="${emoji}"
+              data-lightbox-item="${id}">
+        <span>${emoji}</span>
+        <span class="count">${cnt}</span>
+      </button>
+    `;
+  }).join("");
+
+  /* Attach event */
+  lightboxReactions.querySelectorAll("[data-lightbox-reaction]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const emoji = btn.dataset.lightboxReaction;
+      const itemId = btn.dataset.lightboxItem;
+      btn.classList.add("pop");
+      setTimeout(() => btn.classList.remove("pop"), 300);
+      toggleReaction(itemId, emoji);
+    });
+  });
+
   lightbox.classList.add("show");
+};
+
+/* Update lightbox reactions saat data berubah (realtime) */
+function refreshLightboxReactions() {
+  if (!lightbox.classList.contains("show")) return;
+  const currentSrc = lightboxImg.src;
+  const item = testimonials.find(t => t.foto === currentSrc);
+  if (!item) return;
+
+  lightboxReactions.innerHTML = REACTION_EMOJIS.map(emoji => {
+    const cnt = getReactionCount(item, emoji);
+    const active = hasUserReacted(item, emoji) ? "active" : "";
+    return `
+      <button class="reaction-btn ${active}" 
+              data-lightbox-reaction="${emoji}"
+              data-lightbox-item="${item.id}">
+        <span>${emoji}</span>
+        <span class="count">${cnt}</span>
+      </button>
+    `;
+  }).join("");
+
+  lightboxReactions.querySelectorAll("[data-lightbox-reaction]").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const emoji = btn.dataset.lightboxReaction;
+      const itemId = btn.dataset.lightboxItem;
+      btn.classList.add("pop");
+      setTimeout(() => btn.classList.remove("pop"), 300);
+      toggleReaction(itemId, emoji);
+    });
+  });
+}
+
+/* Patch renderGallery untuk refresh lightbox juga */
+const _originalRender = renderGallery;
+renderGallery = function() {
+  _originalRender();
+  refreshLightboxReactions();
 };
 
 document.getElementById("lightboxClose").addEventListener("click", () => lightbox.classList.remove("show"));
@@ -711,4 +930,4 @@ updateAdminUI();
 startRealtimeListener();
 </script>
 </body>
-</html>
+                                                     </html>
